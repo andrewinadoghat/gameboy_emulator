@@ -10,16 +10,22 @@ typedef struct
 	uint8_t * mem;
 }cart_t
 
+typedef union
+{
+	uint16_t reg;
+	struct 
+	{
+		uint8_t hi;
+		uint8_t lo;
+	};
+}register_t;
+
 typedef struct 
 {
-	uint8_t A;
-	uint8_t F;
-	uint8_t B;
-	uint8_t C;
-	uint8_t D;
-	uint8_t E;
-	uint8_t H;
-	uint8_t L;
+	register_t AF;
+	register_t BC;
+	register_t DE;
+	register_t HL;
 	uint16_t SP;
 	uint16_t PC;
 }gb_cpu_t;

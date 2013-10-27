@@ -23,23 +23,28 @@ void gb_8bit_load(uint8_t * r)
 	uint8_t n = readMemory(gb.cpu.PC++);
 	*r = n;
 }
+
 /* load register with immeidate word */
-void gb_16bit_load(uint16_t * r)
+void gb_16bit_load(uint8_t * hi, uint8_t * lo)
 {
 	uint16_t nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
 	gb.cpu.PC+=2;
-	*r = nn;
+	*hi = HI(nn);
+	*lo = LO(nn);
 }
+
 /* load register with value in other register */
 void gb_8bit_load_reg(uint8_t * r1, uint8_t * r2)
 {
 	*r1 = *r2;
 }
+
 /* load register with value at address */
-void load_reg_add(uint8_t * r, uint16_t a)
+void load_reg_addr(uint8_t * r, uint16_t a)
 {
 	*r = readMemory(a);
 }
+
 /* push a value onto the stack */
 void push(uint16_t nn)
 {
@@ -50,6 +55,7 @@ void push(uint16_t nn)
 	gb.cpu.SP--;
 	writeMemory(gb.cpu.SP,lo);
 }
+
 /* pop value off stack */
 uint16_t pop(void)
 {
@@ -243,7 +249,6 @@ void rlc(uint8_t * r)
 		*r |= 1;
 	if(*r == 0)
 		gb.cpu.F |= (1<<Z_F);
-	
 }
 
 void rl(uint8_t * r)
@@ -258,7 +263,6 @@ void rl(uint8_t * r)
 	*r |= oc;
 	if(*r == 0)
 		gb.cpu.F |= (1<<Z_F);
-	
 }
 
 void rrc(uint8_t * r)
@@ -271,7 +275,6 @@ void rrc(uint8_t * r)
 		*r |= 0x80;
 	if(*r == 0)
 		gb.cpu.F |= (1<<Z_F);
-	
 }
 
 void rr(uint8_t * r)
@@ -333,16 +336,14 @@ void testBit(uint8_t b, uint8_t r)
 	gb.cpu.F &= ~(1<<N_Z);
 }
 
-uint8_t setBit(uint8_t b, uint8_t r)
+void setBit(uint8_t b, uint8_t * r)
 {
-	r |= (1<<b);
-	return r;
+	*r |= (1<<b);
 }
 
-uint8_t resBit(uint8_t b, uint8_t r)
+void resBit(uint8_t b, uint8_t * r)
 {
-	r &= ~(1<<b);
-	return r;
+	*r &= ~(1<<b);
 }
 
 void jump(void)
@@ -370,6 +371,8 @@ void reset(uint8_t a)
 	push(gb.cpu.PC);
 	gb.cpu.PC = a;
 }
+
+//FIXME!!!
 
 uint8_t readMemory(uint16_t a)
 {
@@ -411,3 +414,4 @@ void writeMemory(uint16_t a, uint8_t v)
 		gb.mem[a] = v;
 	}
 }
+
