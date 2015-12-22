@@ -10,9 +10,15 @@
 #include "inc/gb_cpu.h"
 #include "inc/gb_opcode.h"
 
+#define SCREEN_WIDTH 160
+#define SCREEN_HEIGHT 144
+#define BACKGROUND_WIDTH 256
+#define BACKGROUND_HEIGHT 256
+#define NUM_SPRITES 40
+
 #define MAXCYCLES 4194304/60
 
-void updateCPU(void);
+void update_cpu(void);
 
 int main(int argc, char *argv[])
 {
@@ -47,7 +53,7 @@ int main(int argc, char *argv[])
     
     atexit(SDL_Quit);
     SDL_WM_SetCaption("GameBoy Emulator", "GameBoy Emulator");
-    screen = SDL_SetVideoMode(160,144,0,0);
+    screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
     if(screen == NULL)
     {
     	printf("Unable to set video mode: %s\n",SDL_GetError());
@@ -56,28 +62,28 @@ int main(int argc, char *argv[])
 	while()
 	{
 		// call at 60 hz
-		updateCPU();
-		//drawScreen();
+		update_cpu();
+		//draw_screen();
 	}
 	
 	return 0;
 }
 
-void updateCPU(void)
+void update_cpu(void)
 {
 	uint32_t cycles=0;
 	
 	while(cycles < MAXCYCLES)
 	{
-		cycles += executeOpcode();
+		cycles += execute_opcode();
 		interrupts();
-		updateVideo(cycles);
-		updateTimers(cycles);
-		//updateSound(cycles);	
+		update_video(cycles);
+		update_timers(cycles);
+		//update_sound(cycles);	
 	}		
 }
 
-void updateVideo(uint32_t cycles)
+void update_video(uint32_t cycles)
 {
 	switch(mode)
 	{
@@ -94,22 +100,16 @@ void updateVideo(uint32_t cycles)
 	}
 }
 
-#define SCREEN_WIDTH 160
-#define SCREEN_HEIGHT 144
-#define BACKGROUND_WIDTH 256
-#define BACKGROUND_HEIGHT 256
-#define NUM_SPRITES 40
-
-void renderScanLine()
+void render_scanline()
 {
 	if(tiles)
-		renderTiles()
+		render_tiles()
 		
 	if(sprites)
-		renderSprites();
+		render_sprites();
 }
 
-void renderTiles()
+void render_tiles()
 {
 	uint32_t i;
 	uint32_t pixel;
@@ -120,7 +120,7 @@ void renderTiles()
 	}
 }
 
-void renderSprites()
+void render_sprites()
 {
 	uint8_t ;
 	uint32_t i;
@@ -154,7 +154,7 @@ int x,y;
 	
 	SDL_UpdateRect(surf,0,0,0,0);
 
-checkKeys(void)
+check_keys(void)
 {
 	SDL_Event event;
 	if(SDL_PollEvent(&event))
