@@ -1,5 +1,4 @@
 #include "inc/gb_cpu.h"
-#include "inc/gb_ogb.cpu.PCode.h"
 
 #define REG(hi,lo)	(((hi)<<8)|(lo))
 #define HI(x)		(((x)>>8)&0xFF)
@@ -10,7 +9,7 @@ uint8_t executeOpCode(void)
 	uint8_t n;
 	int8_t sn;
 	uint16_t nn;
-	uint8_t op = readMemory(gb.cpu.PC++);
+	uint8_t op = read_memory(gb.cpu.PC++);
 	switch(op)
 	{
 		/* 	8-bit loads */
@@ -40,8 +39,8 @@ uint8_t executeOpCode(void)
 			gb_8bit_load(&gb.cpu.HL.lo);
 			return 8;
 		case 0x36:	// LD (HL),n - 12 cycles
-			n = readMemory(gb.cpu.PC++);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo),n); 
+			n = read_memory(gb.cpu.PC++);
+			write_memory(gb.cpu.HL.reg,n); 
 			return 12;
 		/*  Register loads
 			LD r1,r2 - Put value r2 into r1 */
@@ -68,16 +67,16 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.AF.hi,&gb.cpu.HL.lo);
 			return 4;
 		case 0x0A:	// LD A,(BC) - 8 cycles
-			load_reg_addr(&gb.cpu.AF.hi, REG(gb.cpu.BC.hi,gb.cpu.BC.lo));
+			load_reg_addr(&gb.cpu.AF.hi, gb.cpu.BC.reg);
 			return 8;
 		case 0x1A:	// LD A,(DE) - 8 cycles
-			load_reg_addr(&gb.cpu.AF.hi, REG(gb.cpu.DE.hi,gb.cpu.DE.lo));
+			load_reg_addr(&gb.cpu.AF.hi, gb.cpu.DE.reg);
 			return 8;
 		case 0x7E:	// LD A,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.AF.hi, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.AF.hi, gb.cpu.HL.reg);
 			return 8;
 		case 0xFA:	// LD A,(nn) - 16 cycles
-			nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+			nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 			gb.cpu.PC+=2;
 			load_reg_addr(&gb.cpu.AF.hi, nn);
 			return 16;
@@ -101,7 +100,7 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.BC.hi,&gb.cpu.HL.lo);
 			return 4;
 		case 0x46:	// LD B,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.BC.hi, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.BC.hi, gb.cpu.HL.reg);
 			return 8;
 		// C
 		case 0x48:	// LD C,B - 4 cycles
@@ -123,7 +122,7 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.BC.lo,&gb.cpu.HL.lo);
 			return 4;
 		case 0x4E:	// LD C,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.BC.lo, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.BC.lo, gb.cpu.HL.reg);
 			return 8;
 		// D
 		case 0x50:	// LD D,B - 4 cycles
@@ -145,7 +144,7 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.DE.hi,&gb.cpu.HL.lo);
 			return 4;
 		case 0x55:	// LD D,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.DE.hi, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.DE.hi, gb.cpu.HL.reg);
 			return 8;
 		// E
 		case 0x58:	// LD E,B - 4 cycles
@@ -167,7 +166,7 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.DE.lo,&gb.cpu.HL.lo);
 			return 4;
 		case 0x5E:	// LD E,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.DE.lo, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.DE.lo, gb.cpu.HL.reg);
 			return 8;
 		// H
 		case 0x60:	// LD H,B - 4 cycles
@@ -189,7 +188,7 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.HL.hi,&gb.cpu.HL.lo);
 			return 4;
 		case 0x66:	// LD H,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.HL.hi, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.HL.hi, gb.cpu.HL.reg);
 			return 8;
 		// L
 		case 0x68:	// LD L,B - 4 cycles
@@ -211,26 +210,26 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.HL.lo,&gb.cpu.HL.lo);
 			return 4;
 		case 0x6E:	// LD L,(HL) - 8 cycles
-			load_reg_addr(&gb.cpu.HL.lo, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.HL.lo, gb.cpu.HL.reg);
 			return 8;
 		// HL
 		case 0x70:	// LD (HL),B - 8 cycles - (HL) <- B 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.BC.hi);
+			write_memory(gb.cpu.HL.reg, gb.cpu.BC.hi);
 			return 8;
 		case 0x71:	// LD (HL),C - 8 cycles
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.BC.lo);
+			write_memory(gb.cpu.HL.reg, gb.cpu.BC.lo);
 			return 8;
 		case 0x72:	// LD (HL),D - 8 cycles
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.DE.hi);
+			write_memory(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.DE.hi);
 			return 8;
 		case 0x73:	// LD (HL),E - 8 cycles
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.DE.lo);
+			write_memory(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.DE.lo);
 			return 8;
 		case 0x74:	// LD (HL),H - 8 cycles
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.HL.hi);
+			write_memory(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.HL.hi);
 			return 8;
 		case 0x75:	// LD (HL),L - 8 cycles
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.HL.lo);
+			write_memory(gb.cpu.HL.reg, gb.cpu.HL.lo);
 			return 8;
 		/* 	LD n,A - Put value A into n	*/
 		case 0x47:	// LD B,A - 4 cycles
@@ -252,48 +251,48 @@ uint8_t executeOpCode(void)
 			gb_8bit_load_reg(&gb.cpu.HL.lo,&gb.cpu.AF.hi);
 			return 4;
 		case 0x02:	// LD (BC),A - 8 cycles - (BC) <- A
-			writeMemory(REG(gb.cpu.BC.hi,gb.cpu.BC.lo), gb.cpu.AF.hi);
+			write_memory(gb.cpu.BC.reg, gb.cpu.AF.hi);
 			return 8;
 		case 0x12:	// LD (DE),A - 8 cycles
-			writeMemory(REG(gb.cpu.DE.hi,gb.cpu.DE.lo), gb.cpu.AF.hi);
+			write_memory(gb.cpu.DE.reg, gb.cpu.AF.hi);
 			return 8;
 		case 0x77:	// LD (HL),A - 8 cycles - (HL) <- A
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.AF.hi);
+			write_memory(gb.cpu.HL.reg, gb.cpu.AF.hi);
 			return 8;
 		case 0xEA:	// LD nn,A - 16 cycles
-			nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+			nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 			gb.cpu.PC+=2;
-			writeMemory(nn, gb.cpu.AF.hi);
+			write_memory(nn, gb.cpu.AF.hi);
 			return 16;
 		/*	Load A,(C) and Load A,(C)	*/  //FIXME check
 		case 0xF2:
-			load_reg_addr(&gb.cpu.AF.hi, (REG(gb.cpu.BC.hi,gb.cpu.BC.lo)+0xFF00));
+			load_reg_addr(&gb.cpu.AF.hi, (gb.cpu.BC.reg+0xFF00));
 			return 8;
 		case 0xE2:
-			writeMemory((REG(gb.cpu.BC.hi,gb.cpu.BC.lo)+0xFF00), gb.cpu.AF.hi);
+			write_memory((gb.cpu.BC.reg+0xFF00), gb.cpu.AF.hi);
 			return 8;
 		case 0x3A:	// LD A,(HL-) - 8 cycles - A <- (HL), Dec HL
-			load_reg_addr(&gb.cpu.AF.hi, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			load_reg_addr(&gb.cpu.AF.hi, gb.cpu.HL.reg);
 			decrement(); //FIXME
 			return 8;
 		case 0x32:	// LD (HL-),A - 8 cycles - (HL) <- A, Dec HL
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.AF.hi);
+			write_memory(gb.cpu.HL.reg, gb.cpu.AF.hi);
 			decrement(); //FIXME
 			return 8;
 		case 0x2A:	// LD A,(HL+) - 8 cycles - A <- (HL), Inc HL
-			load_reg_addr(&gb.cpu.AF.hi, REG(gb.cpu.HL.hi,gb.cpu.HL.lo));;
+			load_reg_addr(&gb.cpu.AF.hi, gb.cpu.HL.reg);;
 			increment(); //FIXME
 			return 8;
 		case 0x22:	// LD (HL+),A - 8 cycles - (HL) <- A, Inc HL
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb.cpu.AF.hi);
+			write_memory(gb.cpu.HL.reg, gb.cpu.AF.hi);
 			increment(); //FIXME
 			return 8;	
 		case 0xE0:	// LDH (n),A - 12 cycles
-			n = readMemory(gb.cpu.PC++);
-			writeMemory(n+0xFF00,gb.cpu.AF.hi);
+			n = read_memory(gb.cpu.PC++);
+			write_memory(n+0xFF00,gb.cpu.AF.hi);
 			return 12;
 		case 0xF0:	// LDH A,(n) - 12 cycles
-			n = readMemory(gb.cpu.PC++);
+			n = read_memory(gb.cpu.PC++);
 			load_reg_addr(&gb.cpu.AF.hi,n+0xFF00);
 			return 12;
 		/* 16 bit loads */
@@ -307,52 +306,52 @@ uint8_t executeOpCode(void)
 			gb_16bit_load(&gb.cpu.HL.hi,&gb.cpu.HL.lo);
 			return 12;
 		case 0x31:	// LD SP,nn - 12 cycles
-			nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+			nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 			gb.cpu.PC+=2;
 			gb.cpu.SP = nn;
 			return 12;
 		case 0xF9:	// LD SP,HL - 8 cycles
-			gb.cpu.SP = REG(gb.cpu.HL.hi,gb.cpu.HL.lo);
+			gb.cpu.SP = gb.cpu.HL.reg;
 			return 8;
 		case 0xF8:	// LD HL,SP+n - 12 cycles
-			sn = readMemory(gb.cpu.PC++);
+			sn = read_memory(gb.cpu.PC++);
 			nn = gb.cpu.SP + sn;
-			n = readMemory(nn);
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo)nn;
+			n = read_memory(nn);
+			gb.cpu.HL.regnn;
 			//NEEDS ADDITIONAL CODE
 			return 12;
 		case 0x08:	// LD (nn),SP - 20 cycles - Put sp at address nn
-			nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+			nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 			gb.cpu.PC+=2;
-			writeMemory(nn,LO(gb.cpu.SP));
+			write_memory(nn,LO(gb.cpu.SP));
 			nn++;
-			writeMemory(nn,HI(gb.cpu.SP));
+			write_memory(nn,HI(gb.cpu.SP));
 			return 20;
 		/* PUSH */
 		case 0xF5:	// push AF - 16 cycles
-			push(REG(gb.cpu.AF.hi,gb.cpu.AF.lo));
+			push(gb.cpu.AF.reg);
 			return 16;
 		case 0xC5:	// push BC - 16 cycles
-			push(REG(gb.cpu.BC.hi,gb.cpu.BC.lo));
+			push(gb.cpu.BC.reg);
 			return 16;
 		case 0xD5:	// push DE - 16 cycles
-			push(REG(gb.cpu.DE.hi,gb.cpu.DE.lo));
+			push(gb.cpu.DE.reg);
 			return 16;
 		case 0xE5:	// push HL - 16 cycles
-			push(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			push(gb.cpu.HL.reg);
 			return 16;
-		/* POP */  //FIXME
+		/* POP */  
 		case 0xF1:	// pop AF - 12 cycles
-			REG(gb.cpu.AF.hi,gb.cpu.AF.lo) = pop();
+			gb.cpu.AF.reg = pop();
 			return 12;
 		case 0xC1:	// pop BC - 12 cycles
-			REG(gb.cpu.BC.hi,gb.cpu.BC.lo) = pop();
+			gb.cpu.BC.reg = pop();
 			return 12;
 		case 0xD1:	// pop DE - 12 cycles
-			REG(gb.cpu.DE.hi,gb.cpu.DE.lo) = pop();
+			gb.cpu.DE.reg = pop();
 			return 12;
 		case 0xE1:	// pop HL - 12 cycles
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo) = pop();
+			gb.cpu.HL.reg = pop();
 			return 12;
 		/* 8bit ALU */
 		/* ADD */
@@ -378,10 +377,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_add(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0x86:	// ADD A,(HL)
-			gb.cpu.AF.hi = gb_8bit_add(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_add(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xC6:	// ADD A,n
-			gb.cpu.AF.hi = gb_8bit_add(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_add(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* ADC */
 		case 0x8F:	// ADC A,A
@@ -406,10 +405,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_adc(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0x8E:	// ADC A,(HL)
-			gb.cpu.AF.hi = gb_8bit_adc(regAF,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_adc(regAF,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xCE:	// ADC A,n
-			gb.cpu.AF.hi = gb_8bit_adc(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_adc(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* SUB */
 		case 0x97:	// SUB A
@@ -434,10 +433,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_sub(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0x96:	// SUB (HL)
-			gb.cpu.AF.hi = gb_8bit_sub(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_sub(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xD6:	// SUB n
-			gb.cpu.AF.hi = gb_8bit_sub(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_sub(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* SBC */
 		case 0x9F:	// sbc A
@@ -462,10 +461,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_sbc(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0x9E:	// sbc (HL)
-			gb.cpu.AF.hi = gb_8bit_sbc(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_sbc(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xDE:	// sbc n
-			gb.cpu.AF.hi = gb_8bit_sbc(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_sbc(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* AND */
 		case 0xA7:	// and A
@@ -490,10 +489,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_and(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0xA6:	// and (HL)
-			gb.cpu.AF.hi = gb_8bit_and(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_and(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xE6:	// and n
-			gb.cpu.AF.hi = gb_8bit_and(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_and(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* OR */
 		case 0xB7:	// or A
@@ -518,10 +517,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_or(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0xB6:	// or (HL)
-			gb.cpu.AF.hi = gb_8bit_or(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_or(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xF6:	// or n
-			gb.cpu.AF.hi = gb_8bit_or(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_or(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* XOR */
 		case 0xAF:	// xor A
@@ -546,10 +545,10 @@ uint8_t executeOpCode(void)
 			gb.cpu.AF.hi = gb_8bit_xor(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0xAE:	// xor (HL)
-			gb.cpu.AF.hi = gb_8bit_xor(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb.cpu.AF.hi = gb_8bit_xor(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xEE:	// xor n
-			gb.cpu.AF.hi = gb_8bit_xor(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb.cpu.AF.hi = gb_8bit_xor(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* CP */
 		case 0xBF:	// cp A
@@ -574,10 +573,10 @@ uint8_t executeOpCode(void)
 			gb_8bit_cp(gb.cpu.AF.hi,gb.cpu.HL.lo);
 			return 4;
 		case 0xBE:	// cp (HL)
-			gb_8bit_cp(gb.cpu.AF.hi,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo)));
+			gb_8bit_cp(gb.cpu.AF.hi,read_memory(gb.cpu.HL.reg));
 			return 8;
 		case 0xFE:	// cp n
-			gb_8bit_cp(gb.cpu.AF.hi,readMemory(gb.cpu.PC++));
+			gb_8bit_cp(gb.cpu.AF.hi,read_memory(gb.cpu.PC++));
 			return 8;
 		/* INC */
 		case 0x3C:	// inc A
@@ -602,7 +601,7 @@ uint8_t executeOpCode(void)
 			gb.cpu.HL.lo = gb_8bit_inc(gb.cpu.HL.lo);
 			return 4;
 		case 0x34:	// inc (HL)
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb_8bit_inc(readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))));
+			write_memory(gb.cpu.HL.reg, gb_8bit_inc(read_memory(gb.cpu.HL.reg)));
 			return 12;
 		/* DEC */
 		case 0x3D:	// dec A
@@ -627,51 +626,51 @@ uint8_t executeOpCode(void)
 			gb.cpu.HL.lo = gb_8bit_dec(gb.cpu.HL.lo);
 			return 4;
 		case 0x35:	// dec (HL)
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), gb_8bit_dec(readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))));
+			write_memory(gb.cpu.HL.reg, gb_8bit_dec(read_memory(gb.cpu.HL.reg)));
 			return 12;
 		/* 16bit ALU */
 		/* ADD */ ///FIXME
 		case 0x09:	// add HL,BC
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo) = gp_16bit_add(REG(gb.cpu.HL.hi,gb.cpu.HL.lo),REG(gb.cpu.BC.hi,gb.cpu.BC.lo))
+			gb.cpu.HL.reg = gp_16bit_add(gb.cpu.HL.reg,gb.cpu.BC.reg)
 			return 8;
 		case 0x19:	// add HL,DE
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo) = gp_16bit_add(REG(gb.cpu.HL.hi,gb.cpu.HL.lo),REG(gb.cpu.DE.hi,gb.cpu.DE.lo))
+			gb.cpu.HL.reg = gp_16bit_add(gb.cpu.HL.reg,gb.cpu.DE.reg)
 			return 8;
 		case 0x29:	// add HL,HL
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo) = gp_16bit_add(REG(gb.cpu.HL.hi,gb.cpu.HL.lo),REG(gb.cpu.HL.hi,gb.cpu.HL.lo))
+			gb.cpu.HL.reg = gp_16bit_add(gb.cpu.HL.reg,gb.cpu.HL.reg)
 			return 8;
 		case 0x39:	// add HL,SP
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo) = gp_16bit_add(REG(gb.cpu.HL.hi,gb.cpu.HL.lo),gb.cpu.SP)
+			gb.cpu.HL.reg = gp_16bit_add(gb.cpu.HL.reg,gb.cpu.SP)
 			return 8;
 		/* INC */
 		case 0x03:	//INC BC //FIXME
-			REG(gb.cpu.BC.hi,gb.cpu.BC.lo)++;
+			gb.cpu.BC.reg++;
 			return 8;
 		case 0x13:	//INC DE
-			REG(gb.cpu.DE.hi,gb.cpu.DE.lo)++;
+			gb.cpu.DE.reg++;
 			return 8;
 		case 0x23:	//INC HL
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo)++;
+			gb.cpu.HL.reg++;
 			return 8;
 		case 0x33:	//INC BC
 			gb.cpu.SP++;
 			return 8;
 		/* DEC */
 		case 0x0B:	//INC BC
-			REG(gb.cpu.BC.hi,gb.cpu.BC.lo)--;
+			gb.cpu.BC.reg--;
 			return 8;
 		case 0x1B:	//INC DE
-			REG(gb.cpu.DE.hi,gb.cpu.DE.lo)--;
+			gb.cpu.DE.reg--;
 			return 8;
 		case 0x2B:	//INC HL
-			REG(gb.cpu.HL.hi,gb.cpu.HL.lo)--;
+			gb.cpu.HL.reg--;
 			return 8;
 		case 0x3B:	//INC BC
 			gb.cpu.SP--;
 			return 8;
 		/* MISC */
 		case 0xCB:	//execute extended op code
-			n = readMemory(gb.cpu.PC++);
+			n = read_memory(gb.cpu.PC++);
 			return executeExtendOpCode(n);
 		/* DAA */
 		case 0x27:	// DAA
@@ -759,7 +758,7 @@ uint8_t executeOpCode(void)
 				gb.cpu.PC+=2;
 			return 12;
 		case 0xE9:
-			gb.cpu.PC = REG(gb.cpu.HL.hi,gb.cpu.HL.lo);
+			gb.cpu.PC = gb.cpu.HL.reg;
 			return 4;
 		case 0x18:
 			jump_imd();
@@ -903,7 +902,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 			gb.cpu.HL.lo = swap(gb.cpu.HL.lo);
 			return 8;
 		case 0x36:	// swap (HL)
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo),swap(readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))));
+			write_memory(gb.cpu.HL.reg,swap(read_memory(gb.cpu.HL.reg)));
 			return 16;
 		/* Rotates and Shifts */
 		/* RLC */
@@ -929,9 +928,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			rlc(&gb.cpu.HL.lo);
 			return 8;
 		case 0x06:	// RLC (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			rlc(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;
 		/* RL */
 		case 0x17:	// RL A
@@ -956,9 +955,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			rl(&gb.cpu.HL.lo);
 			return 8;
 		case 0x16:	// RL (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			rl(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;	
 		/* RRC */
 		case 0x0F:	// RRC A
@@ -983,9 +982,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			rrc(&gb.cpu.HL.lo);
 			return 8;
 		case 0x0E:	// RRC (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			rrc(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;
 		/* RR */
 		case 0x1F:	// RR A
@@ -1010,9 +1009,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			rr(&gb.cpu.HL.lo);
 			return 8;
 		case 0x1E:	// RR (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			rr(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;	
 		/* SLA */
 		case 0x27:	// SLA A
@@ -1037,9 +1036,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			sla(&gb.cpu.HL.lo);
 			return 8;
 		case 0x26:	// SLA (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			sla(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;
 		/* SRA */
 		case 0x2F:	// SRA A
@@ -1064,9 +1063,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			sra(&gb.cpu.HL.lo);
 			return 8;
 		case 0x2E:	// sra (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			sra(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;	
 		/* SRL */
 		case 0x3F:	// srl A
@@ -1091,9 +1090,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 			srl(&gb.cpu.HL.lo);
 			return 8;
 		case 0x3E:	// srl (HL)
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));
+			n = read_memory(gb.cpu.HL.reg);
 			srl(&n);
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 	16;	
 		/* bit operations */
 		/* BIT */
@@ -1103,7 +1102,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x43:	testBit(0,gb.cpu.DE.lo); return 8;
 		case 0x44:	testBit(0,gb.cpu.HL.hi); return 8;
 		case 0x45:	testBit(0,gb.cpu.HL.lo); return 8;
-		case 0x46:	testBit(0,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x46:	testBit(0,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x47:	testBit(0,gb.cpu.AF.hi); return 8;
 		case 0x48:	testBit(1,gb.cpu.BC.hi); return 8;
 		case 0x49:	testBit(1,gb.cpu.BC.lo); return 8;
@@ -1111,7 +1110,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x4B:	testBit(1,gb.cpu.DE.lo); return 8;
 		case 0x4C:	testBit(1,gb.cpu.HL.hi); return 8;
 		case 0x4D:	testBit(1,gb.cpu.HL.lo); return 8;
-		case 0x4E:	testBit(1,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x4E:	testBit(1,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x4F:	testBit(1,gb.cpu.AF.hi); return 8;
 		case 0x50:	testBit(2,gb.cpu.BC.hi); return 8;
 		case 0x51:	testBit(2,gb.cpu.BC.lo); return 8;
@@ -1119,7 +1118,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x53:	testBit(2,gb.cpu.DE.lo); return 8;
 		case 0x54:	testBit(2,gb.cpu.HL.hi); return 8;
 		case 0x55:	testBit(2,gb.cpu.HL.lo); return 8;
-		case 0x56:	testBit(2,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x56:	testBit(2,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x57:	testBit(2,gb.cpu.AF.hi); return 8;
 		case 0x58:	testBit(3,gb.cpu.BC.hi); return 8;
 		case 0x59:	testBit(3,gb.cpu.BC.lo); return 8;
@@ -1127,7 +1126,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x5B:	testBit(3,gb.cpu.DE.lo); return 8;
 		case 0x5C:	testBit(3,gb.cpu.HL.hi); return 8;
 		case 0x5D:	testBit(3,gb.cpu.HL.lo); return 8;
-		case 0x5E:	testBit(3,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x5E:	testBit(3,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x5F:	testBit(3,gb.cpu.AF.hi); return 8;
 		case 0x60:	testBit(4,gb.cpu.BC.hi); return 8;
 		case 0x61:	testBit(4,gb.cpu.BC.lo); return 8;
@@ -1135,7 +1134,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x63:	testBit(4,gb.cpu.DE.lo); return 8;
 		case 0x64:	testBit(4,gb.cpu.HL.hi); return 8;
 		case 0x65:	testBit(4,gb.cpu.HL.lo); return 8;
-		case 0x66:	testBit(4,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x66:	testBit(4,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x67:	testBit(4,gb.cpu.AF.hi); return 8;
 		case 0x68:	testBit(5,gb.cpu.BC.hi); return 8;
 		case 0x69:	testBit(5,gb.cpu.BC.lo); return 8;
@@ -1143,7 +1142,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x6B:	testBit(5,gb.cpu.DE.lo); return 8;
 		case 0x6C:	testBit(5,gb.cpu.HL.hi); return 8;
 		case 0x6D:	testBit(5,gb.cpu.HL.lo); return 8;
-		case 0x6E:	testBit(5,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x6E:	testBit(5,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x6F:	testBit(5,gb.cpu.AF.hi); return 8;
 		case 0x70:	testBit(6,gb.cpu.BC.hi); return 8;
 		case 0x71:	testBit(6,gb.cpu.BC.lo); return 8;
@@ -1151,7 +1150,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x73:	testBit(6,gb.cpu.DE.lo); return 8;
 		case 0x74:	testBit(6,gb.cpu.HL.hi); return 8;
 		case 0x75:	testBit(6,gb.cpu.HL.lo); return 8;
-		case 0x76:	testBit(6,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x76:	testBit(6,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x77:	testBit(6,gb.cpu.AF.hi); return 8;
 		case 0x78:	testBit(7,gb.cpu.BC.hi); return 8;
 		case 0x79:	testBit(7,gb.cpu.BC.lo); return 8;
@@ -1159,7 +1158,7 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x7B:	testBit(7,gb.cpu.DE.lo); return 8;
 		case 0x7C:	testBit(7,gb.cpu.HL.hi); return 8;
 		case 0x7D:	testBit(7,gb.cpu.HL.lo); return 8;
-		case 0x7E:	testBit(7,readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo))); return 16;
+		case 0x7E:	testBit(7,read_memory(gb.cpu.HL.reg)); return 16;
 		case 0x7F:	testBit(7,gb.cpu.AF.hi); return 8;
 		/* SET */
 		case 0xC0:	setBit(0,gb.cpu.BC.hi); return 8;
@@ -1169,9 +1168,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xC4:	setBit(0,&gb.cpu.HL.hi); return 8;
 		case 0xC5:	setBit(0,&gb.cpu.HL.lo); return 8;
 		case 0xC6:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(7,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xC7:	setBit(0,&gb.cpu.AF.hi); return 8;
 		case 0xC8:	setBit(1,&gb.cpu.BC.hi); return 8;
@@ -1181,9 +1180,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xCC:	setBit(1,&gb.cpu.HL.hi); return 8;
 		case 0xCD:	setBit(1,&gb.cpu.HL.lo); return 8;
 		case 0xCE:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(1,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xCF:	setBit(1,&gb.cpu.AF.hi); return 8;
 		case 0xD0:	setBit(2,&gb.cpu.BC.hi); return 8;
@@ -1193,9 +1192,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xD4:	setBit(2,&gb.cpu.HL.hi); return 8;
 		case 0xD5:	setBit(2,&gb.cpu.HL.lo); return 8;
 		case 0xD6:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(2,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xD7:	setBit(2,&gb.cpu.AF.hi); return 8;
 		case 0xD8:	setBit(3,&gb.cpu.BC.hi); return 8;
@@ -1205,9 +1204,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xDC:	setBit(3,&gb.cpu.HL.hi); return 8;
 		case 0xDD:	setBit(3,&gb.cpu.HL.lo); return 8;
 		case 0xDE:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(3,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xDF:	setBit(3,&gb.cpu.AF.hi); return 8;
 		case 0xE0:	setBit(4,&gb.cpu.BC.hi); return 8;
@@ -1217,9 +1216,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xE4:	setBit(4,&gb.cpu.HL.hi); return 8;
 		case 0xE5:	setBit(4,&gb.cpu.HL.lo); return 8;
 		case 0xE6:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(4,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xE7:	setBit(4,&gb.cpu.AF.hi); return 8;
 		case 0xE8:	setBit(5,&gb.cpu.BC.hi); return 8;
@@ -1229,9 +1228,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xEC:	setBit(5,&gb.cpu.HL.hi); return 8;
 		case 0xED:	setBit(5,&gb.cpu.HL.lo); return 8;
 		case 0xEE:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(5,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xEF:	setBit(5,&gb.cpu.AF.hi); return 8;
 		case 0xF0:	setBit(6,&gb.cpu.BC.hi); return 8;
@@ -1241,9 +1240,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xF4:	setBit(6,&gb.cpu.HL.hi); return 8;
 		case 0xF5:	setBit(6,&gb.cpu.HL.lo); return 8;
 		case 0xF6:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(6,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xF7:	setBit(6,&gb.cpu.AF.hi); return 8;
 		case 0xF8:	setBit(7,&gb.cpu.BC.hi); return 8;
@@ -1253,9 +1252,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xFC:	setBit(7,&gb.cpu.HL.hi); return 8;
 		case 0xFD:	setBit(7,&gb.cpu.HL.lo); return 8;
 		case 0xFE:
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			setBit(7,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xFF:	setBit(7,&gb.cpu.AF.hi); return 8;
 		/* RES */
@@ -1266,9 +1265,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x84:	resBit(0,&gb.cpu.HL.hi); return 8;
 		case 0x85:	resBit(0,&gb.cpu.HL.lo); return 8;
 		case 0x86:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(0,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0x87:	resBit(0,&gb.cpu.AF.hi); return 8;
 		case 0x88:	resBit(1,&gb.cpu.BC.hi); return 8;
@@ -1278,9 +1277,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x8C:	resBit(1,&gb.cpu.HL.hi); return 8;
 		case 0x8D:	resBit(1,&gb.cpu.HL.lo); return 8;
 		case 0x8E:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(1,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0x8F:	resBit(1,&gb.cpu.AF.hi); return 8;
 		case 0x90:	resBit(2,&gb.cpu.BC.hi); return 8;
@@ -1290,9 +1289,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x94:	resBit(2,&gb.cpu.HL.hi); return 8;
 		case 0x95:	resBit(2,&gb.cpu.HL.lo); return 8;
 		case 0x96:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(2,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0x97:	resBit(2,&gb.cpu.AF.hi); return 8;
 		case 0x98:	resBit(3,&gb.cpu.BC.hi); return 8;
@@ -1302,9 +1301,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0x9C:	resBit(3,&gb.cpu.HL.hi); return 8;
 		case 0x9D:	resBit(3,&gb.cpu.HL.lo); return 8;
 		case 0x9E:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(3,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0x9F:	resBit(3,&gb.cpu.AF.hi); return 8;
 		case 0xA0:	resBit(4,&gb.cpu.BC.hi); return 8;
@@ -1314,9 +1313,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xA4:	resBit(4,&gb.cpu.HL.hi); return 8;
 		case 0xA5:	resBit(4,&gb.cpu.HL.lo); return 8;
 		case 0xA6:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(4,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xA7:	resBit(4,&gb.cpu.AF.hi); return 8;
 		case 0xA8:	resBit(5,&gb.cpu.BC.hi); return 8;
@@ -1326,9 +1325,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xAC:	resBit(5,&gb.cpu.HL.hi); return 8;
 		case 0xAD:	resBit(5,&gb.cpu.HL.lo); return 8;
 		case 0xAE:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(5,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xAF:	resBit(5,&gb.cpu.AF.hi); return 8;
 		case 0xB0:	resBit(6,&gb.cpu.BC.hi); return 8;
@@ -1338,9 +1337,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xB4:	resBit(6,&gb.cpu.HL.hi); return 8;
 		case 0xB5:	resBit(6,&gb.cpu.HL.lo); return 8;
 		case 0xB6:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(6,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xB7:	resBit(6,&gb.cpu.AF.hi); return 8;
 		case 0xB8:	resBit(7,&gb.cpu.BC.hi); return 8;
@@ -1350,9 +1349,9 @@ uint8_t executeExtendOpCode(uint8_t op)
 		case 0xBC:	resBit(7,&gb.cpu.HL.hi); return 8;
 		case 0xBD:	resBit(7,&gb.cpu.HL.lo); return 8;
 		case 0xBE:	
-			n = readMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo));	
+			n = read_memory(gb.cpu.HL.reg);	
 			resBit(7,&n); 
-			writeMemory(REG(gb.cpu.HL.hi,gb.cpu.HL.lo), n);
+			write_memory(gb.cpu.HL.reg, n);
 			return 16;
 		case 0xBF:	resBit(7,&gb.cpu.AF.hi); return 8;
 	}

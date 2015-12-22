@@ -2,12 +2,12 @@
 
 
 
-void gbInit(void)
+void gb_init(void)
 {
 	
 }
 
-void updateTimer()
+void update_timer()
 {
 	
 }
@@ -20,17 +20,16 @@ void interrupts()
 /* load register with immeidate byte */
 void gb_8bit_load(uint8_t * r)
 {
-	uint8_t n = readMemory(gb.cpu.PC++);
+	uint8_t n = read_memory(gb.cpu.PC++);
 	*r = n;
 }
 
 /* load register with immeidate word */
-void gb_16bit_load(uint8_t * hi, uint8_t * lo)
+void gb_16bit_load(uint16_t * r)
 {
-	uint16_t nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+	uint16_t nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 	gb.cpu.PC+=2;
-	*hi = HI(nn);
-	*lo = LO(nn);
+	*r = nn;
 }
 
 /* load register with value in other register */
@@ -42,7 +41,7 @@ void gb_8bit_load_reg(uint8_t * r1, uint8_t * r2)
 /* load register with value at address */
 void load_reg_addr(uint8_t * r, uint16_t a)
 {
-	*r = readMemory(a);
+	*r = read_memory(a);
 }
 
 /* push a value onto the stack */
@@ -51,22 +50,22 @@ void push(uint16_t nn)
 	uint8_t hi = nn > 8;
 	uint8_t lo = nn & 0xff;
 	gb.cpu.SP--;
-	writeMemory(gb.cpu.SP,hi);
+	write_memory(gb.cpu.SP,hi);
 	gb.cpu.SP--;
-	writeMemory(gb.cpu.SP,lo);
+	write_memory(gb.cpu.SP,lo);
 }
 
 /* pop value off stack */
 uint16_t pop(void)
 {
-	uint16_t nn = readMemory(gb.cpu.SP);
+	uint16_t nn = read_memory(gb.cpu.SP);
 	gb.cpu.SP++;
-	nn = readMemory(gb.cpu.SP)<<8;
+	nn = read_memory(gb.cpu.SP)<<8;
 	gb.cpu.SP++;
 	return nn;
 }
 
-/* add 8 bit number */
+/* add 8 bit number */https://www.facebook.com/
 uint8_t gb_8bit_add(uint8_t a, uint8_t b)
 {
 	uint8_t r = a+b;
@@ -348,19 +347,19 @@ void resBit(uint8_t b, uint8_t * r)
 
 void jump(void)
 {
-	uint16_t nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+	uint16_t nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 	gb.cpu.PC = nn;
 }
 
 void jump_imd(void)
 {
-	int8_t n = readMemory(gb.cpu.PC++);
+	int8_t n = read_memory(gb.cpu.PC++);
 	gb.cpu.PC += n;
 }
 
 void call(void)
 {
-	uint16_t nn = (readMemory(gb.cpu.PC+1)<<8)|readMemory(gb.cpu.PC);
+	uint16_t nn = (read_memory(gb.cpu.PC+1)<<8)|read_memory(gb.cpu.PC);
 	gb.cpu.PC+=2;
 	push(gb.cpu.PC);
 	gb.cpu.PC = nn;
@@ -374,7 +373,7 @@ void reset(uint8_t a)
 
 //FIXME!!!
 
-uint8_t readMemory(uint16_t a)
+uint8_t read_memory(uint16_t a)
 {
 	if(a>=0x4000 && a<=0x7FFF)
 	{
@@ -389,7 +388,7 @@ uint8_t readMemory(uint16_t a)
 	
 }
 
-void writeMemory(uint16_t a, uint8_t v)
+void write_memory(uint16_t a, uint8_t v)
 {
 	
 	if(a < 0x8000)
