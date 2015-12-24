@@ -389,15 +389,15 @@ void write_memory(uint16_t a, uint8_t v)
 {
 	
 	if(a < 0x8000) { //ROM memory in catridge
-		if (a < 0x2000) { // RAM Bank enable
+		if (a < 0x2000) { // 0x0000 - 0x1FFF RAM Bank enable
 		  
-		} else if (a < 0x3000) { // ROM Bank Select LSB
+		} else if (a < 0x3000) { // 0x2000 - 0x2FFF ROM Bank Select LSB
 		  
-		} else if (a < 0x4000) { // ROM Bank Select MSB (MBC5)
+		} else if (a < 0x4000) { // 0x3000 - 0x3FFF ROM Bank Select MSB (MBC5)
 		  
-		} else if (a < 0x6000) { // RAM Bank Select 
+		} else if (a < 0x6000) { // 0x4000 - 0x5FFF RAM Bank Select 
 		  
-		} else /* a < 0x8000*/ { // RAN/ROM Select (MCB1)
+		} else /* a < 0x8000*/ { // 0x6000 - 0x7FFF RAM/ROM Mode Select (MCB1)
 		  
 		}
 	} else if(a>=0xE000 && a<=0xFDFF) { // if writing to echo also write to RAM
